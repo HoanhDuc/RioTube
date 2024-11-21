@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useId } from "react";
+import { useState, useEffect, useCallback, useId, Suspense } from "react";
 import { getChannelInfo, searchVideos, getVideoInfo } from "@/apis/youtube";
 import { useSearchParams } from "next/navigation";
 import { IChannelItem, IVideoItem } from "@/interfaces/youtube";
@@ -9,7 +9,8 @@ import { formatDistanceToNow } from "date-fns";
 import { formatViewCount } from "@/utils/format";
 import { ICardVideo } from "@/interfaces/video";
 
-export default function ResultsPage() {
+// Create a wrapper component for the search functionality
+function ResultsContent() {
   const [videos, setVideos] = useState<IVideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -231,5 +232,20 @@ export default function ResultsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Main page component
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+        </div>
+      }
+    >
+      <ResultsContent />
+    </Suspense>
   );
 }
