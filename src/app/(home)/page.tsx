@@ -10,9 +10,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { VideoModal } from "@/components/VideoModal";
 import { VideoCard } from "@/components/VideoCard";
 import { ICardVideo } from "@/interfaces/video";
+import VideoCardSkeleton from "@/components/VideoCardSkeleton";
+import Image from "next/image";
 
 export default function Home() {
   const [newFeedList, setNewFeedList] = useState<INewFeedList | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [channelInfo, setChannelInfo] = useState<{
     [key: string]: IChannelItem;
   }>({});
@@ -20,7 +23,9 @@ export default function Home() {
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
 
-  useEffect(() => fetchDataNewFeed(), []);
+  useEffect(() => {
+    fetchDataNewFeed();
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -28,7 +33,6 @@ export default function Home() {
         setActive(false);
       }
     }
-
     if (active && typeof active === "object") {
       document.body.style.overflow = "hidden";
     } else {
@@ -41,48 +45,46 @@ export default function Home() {
 
   useOutsideClick(ref, () => setActive(null));
 
-  const fetchDataNewFeed = () => {
-    getYouTubeFeed({
-      chart: "mostPopular",
-      maxResults: 20,
-    }).then((data) => {
-      const videoIds = data.items.map((item) => item.id).join(",");
-
-      getVideoInfo({
-        id: videoIds,
-      }).then((videoData) => {
-        const mergedData = {
-          ...data,
-          items: data.items.map((item) => {
-            const videoStats = videoData.items.find(
-              (v: { id: string }) => v.id === item.id
-            );
-            return {
-              ...item,
-              statistics: videoStats?.statistics,
-            };
-          }),
-        };
-        setNewFeedList(mergedData as INewFeedList);
+  const fetchDataNewFeed = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getYouTubeFeed({
+        chart: "mostPopular",
+        maxResults: 20,
       });
-
+      const videoIds = data.items.map((item) => item.id).join(",");
       const channelIds = [
         ...new Set(data.items.map((item) => item.snippet.channelId)),
       ];
-      getChannelInfo({
-        id: channelIds.join(","),
-        type: "channel",
-      }).then((channelData) => {
-        const channelMap = channelData.items.reduce(
-          (acc: { [key: string]: typeof channel }, channel) => {
-            acc[channel.id] = channel;
-            return acc;
-          },
-          {}
-        );
-        setChannelInfo(channelMap);
-      });
-    });
+      const [videoData, channelData] = await Promise.all([
+        getVideoInfo({ id: videoIds }),
+        getChannelInfo({ id: channelIds.join(","), type: "channel" }),
+      ]);
+      const mergedData = {
+        ...data,
+        items: data.items.map((item) => ({
+          ...item,
+          statistics: videoData.items.find(
+            (v: { id: string }) => v.id === item.id
+          )?.statistics,
+        })),
+      };
+
+      const channelMap = channelData.items.reduce(
+        (acc: { [key: string]: typeof channel }, channel) => {
+          acc[channel.id] = channel;
+          return acc;
+        },
+        {}
+      );
+
+      setNewFeedList(mergedData as INewFeedList);
+      setChannelInfo(channelMap);
+    } catch (error) {
+      console.error("Error fetching feed:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const videoCards: ICardVideo[] =
@@ -112,28 +114,28 @@ export default function Home() {
 
   return (
     <>
-      <>
-        <AnimatePresence>
-          {active && typeof active === "object" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/20 h-full w-full z-10"
-            />
-          )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {active && typeof active === "object" ? (
-            <VideoModal
-              active={active}
-              id={id}
-              onClose={() => setActive(null)}
-              modalRef={ref}
-            />
-          ) : null}
-        </AnimatePresence>
-        <ul className="mx-auto w-full grid grid-cols-4 gap-4">
+      <AnimatePresence>
+        {active && typeof active === "object" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/20 h-full w-full z-10"
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {active && typeof active === "object" ? (
+          <VideoModal
+            active={active}
+            id={id}
+            onClose={() => setActive(null)}
+            modalRef={ref}
+          />
+        ) : null}
+      </AnimatePresence>
+      {isLoading || videoCards.length ? (
+        <ul className="mx-auto w-full grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 gap-4">
           {videoCards.map((card) => (
             <VideoCard
               key={`card-${card.title}-${id}`}
@@ -142,8 +144,15 @@ export default function Home() {
               onCardClick={(card) => setActive(card)}
             />
           ))}
+          {Array.from({ length: 4 }).map((_, index) => (
+            <VideoCardSkeleton key={`skeleton-${index}`} />
+          ))}
         </ul>
-      </>
+      ) : (
+        <div className=" flex justify-center items-center">
+          <Image src="/no-video.svg" alt="No video" width={200} height={200} />
+        </div>
+      )}
     </>
   );
 }

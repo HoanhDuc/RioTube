@@ -9,7 +9,7 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
     <motion.div
       layoutId={`card-${card.title}-${id}`}
       onClick={() => onCardClick && onCardClick(card)}
-      className="flex flex-col justify-between gap-5 p-4 bg-primary rounded-xl cursor-pointer text-white"
+      className="flex flex-col justify-between gap-5 p-4 rounded-xl cursor-pointer text-white bg-primary hover:border  hover:border-secondary"
     >
       <div className="">
         <motion.div layoutId={`image-${card.title}-${id}`} className="mb-3">
@@ -18,7 +18,7 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
             height={400}
             src={card.src}
             alt={card.title}
-            className="object-cover object-center"
+            className="object-cover object-center rounded-xl border-2 border-black"
           />
         </motion.div>
         <motion.h3
@@ -37,8 +37,8 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
         </motion.p>
         <div className="flex gap-2 items-center">
           <Avatar src={card.channelAvatar} />
-          <div>
-            <p>{card.channelName}</p>
+          <div className="w-2/3">
+            <p className="font-bold truncate ">{card.channelName}</p>
             <p className="text-xs text-neutral-400">
               {formatSubscribersCount(card.channelSubscribers)}
             </p>

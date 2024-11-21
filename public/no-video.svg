@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 32"
+  fill="none"
+  stroke="#ff0000"
+  stroke-width="1"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="10" r="8">
+    <animate
+      attributeName="opacity"
+      from="0"
+      to="1"
+      dur="0.8s"
+      fill="freeze"
+    />
+  </circle>
+
+  <path d="M8 6L16 14M16 6L8 14">
+    <animate
+      attributeName="stroke-dasharray"
+      from="0,50"
+      to="50,50"
+      dur="1s"
+      fill="freeze"
+    />
+  </path>
+
+  <text
+    x="12"
+    y="23"
+    fill="#ff0000"
+    stroke="none"
+    font-size="4"
+    text-anchor="middle"
+    font-family="system-ui, sans-serif"
+  >ERROR</text>
+</svg>
