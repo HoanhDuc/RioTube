@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="100%" style="stop-color:#fff"/>
+      <animateTransform
+        attributeName="gradientTransform"
+        type="rotate"
+        from="0 100 100"
+        to="360 100 100"
+        dur="8s"
+        repeatCount="indefinite"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Abstract shape -->
+  <path d="M100,20 L175,60 L175,140 L100,180 L25,140 L25,60 Z" 
+        fill="none" 
+        stroke="url(#neonGradient)" 
+        stroke-width="4">
+    <animate
+      attributeName="opacity"
+      values="1;0.7;1"
+      dur="3s"
+      repeatCount="indefinite"/>
+  </path>
+
+  <!-- Center play icon -->
+  <g transform="translate(100,100)">
+    <circle r="40" 
+            fill="url(#neonGradient)" 
+            opacity="0.2">
+      <animate
+        attributeName="opacity"
+        values="0.2;0.4;0.2"
+        dur="2s"
+        repeatCount="indefinite"/>
+    </circle>
+    <path d="M-15,-25 L25,0 L-15,25 Z" 
+          fill="#22C55D"/>
+  </g>
+
+  <!-- Energy rings -->
+  <circle cx="100" cy="100" r="55" 
+          fill="none" 
+          stroke="#fff" 
+          stroke-width="4" 
+          opacity="0.5">
+    <animate
+      attributeName="r"
+      values="55;60;55"
+      dur="2s"
+      repeatCount="indefinite"/>
+    <animate
+      attributeName="opacity"
+      values="0.5;0.2;0.5"
+      dur="2s"
+      repeatCount="indefinite"/>
+  </circle>
+</svg>
