@@ -1,9 +1,3 @@
-export interface VideoCardProps {
-  card: ICardVideo;
-  id: string;
-  onCardClick?: (card: ICardVideo) => void;
-}
-
 export interface VideoModalProps {
   active: ICardVideo;
   id: string;
@@ -20,5 +14,8 @@ export interface ICardVideo {
   channelName: string;
   channelSubscribers: string;
   publishedAt: string;
-  content: () => JSX.Element;
+  videoId?: string;
+  isLiveStream?: boolean;
+  // content: () => JSX.Element;
+  onClick?: () => void;
 }

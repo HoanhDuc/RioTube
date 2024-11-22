@@ -5,54 +5,94 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Dropdown,
-  Input,
   Link,
 } from "@nextui-org/react";
 import { signOut, useSession } from "next-auth/react";
 import Logo from "./logo";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useState } from "react";
 
 export default function Header() {
-  const { data: session } = useSession();
   const router = useRouter();
+  const { data: session } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <header className="sticky top-0 flex items-center justify-between px-4 py-2 border-b-2 border-primary bg-black z-50">
-      <Link href="/">
-        <Logo size={50} />
-      </Link>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="hover:bg-primary p-2 rounded-xl flex items-center justify-center"
+        >
+          <svg
+            className="w-7 h-7 text-secondary"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 6h16"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 12h16"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 18h16"
+            />
+          </svg>
+        </button>
+        <Link href="/">
+          <Logo size={50} className="hidden md:flex" />
+          <Image
+            src="/logo.svg"
+            alt="logo"
+            width={60}
+            height={60}
+            className="md:hidden"
+          />
+        </Link>
+      </div>
       <div className="flex items-center justify-end gap-4 w-full">
-        <Input
-          radius="full"
-          size="sm"
-          placeholder="Search on RioTube"
-          startContent={
-            <svg
-              aria-hidden="true"
-              className="w-5 h-5 text-primary transition-transform duration-300 group-focus-within:rotate-90"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          }
-          className="text-primary border rounded-full border-secondary w-2/3 max-w-[300px]"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              router.push(
-                `/results?search_query=${
-                  (e.target as HTMLInputElement).value || ""
-                }`
-              );
-            }
-          }}
-        />
+        <div className="relative flex items-center">
+          <input
+            className={`p-2 pl-9 bg-primary text-secondary rounded-xl transition-all duration-300 md:focus:w-[400px] focus:w-[200px] blur:w-[40px] h-[40px] w-[40px] focus:outline-none`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                router.push(
+                  `/results?search_query=${
+                    (e.target as HTMLInputElement).value || ""
+                  }`
+                );
+              }
+            }}
+          />
+          <svg
+            aria-hidden="true"
+            className="absolute left-3 text-secondary pointer-events-none w-5 h-5 transition-transform duration-300 group-focus-within:rotate-90"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
         <Dropdown className="text-primary">
           <DropdownTrigger className="cursor-pointer">
             <div>

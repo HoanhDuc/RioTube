@@ -12,10 +12,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     const session = localStorage.getItem("session");
-    const apiKey = "AIzaSyDJfBTk_t7Csg3RdKX4rq9QxT54BSbL9j8";
     config.params = {
       ...config.params,
-      key: apiKey,
+      key: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
     };
 
     if (session) {

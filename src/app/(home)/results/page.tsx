@@ -8,17 +8,25 @@ import { VideoCard } from "@/components/VideoCard";
 import { formatDistanceToNow } from "date-fns";
 import { formatViewCount } from "@/utils/format";
 import { ICardVideo } from "@/interfaces/video";
+import { VideoModal } from "@/components/VideoModal";
+import VideoCardSkeleton from "@/components/VideoCardSkeleton";
+import Logo from "@/ui/logo";
+import ChannelCard from "@/components/ChannelCard";
 
-// Create a wrapper component for the search functionality
 function ResultsContent() {
   const [videos, setVideos] = useState<IVideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageToken, setPageToken] = useState<string | null>(null);
+  const [channelsLivingStream, setChannelsLivingStream] = useState<string[]>(
+    []
+  );
   const [hasMore, setHasMore] = useState(true);
   const [channelInfo, setChannelInfo] = useState<{
     [key: string]: IChannelItem;
   }>({});
+  const [selectedVideoId, setSelectedVideoId] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search_query") || "";
@@ -33,7 +41,16 @@ function ResultsContent() {
     }) => {
       const results = await searchVideos(searchParams);
 
+      setChannelsLivingStream(
+        results.items
+          .filter(
+            (item: IVideoItem) => item.snippet.liveBroadcastContent === "live"
+          )
+          .map((item: IVideoItem) => item.snippet.channelId)
+      );
+
       const videoIds = results.items.map((item: IVideoItem) => item.id.videoId);
+      if (!videoIds.length) return { mergedVideos: [], nextPageToken: "" };
       const videoDetails = await getVideoInfo({
         id: videoIds.join(","),
       });
@@ -79,7 +96,7 @@ function ResultsContent() {
         setLoading(true);
         const { mergedVideos, nextPageToken } = await fetchVideoData({
           q: searchQuery,
-          maxResults: 20,
+          maxResults: 9,
           pageToken: "",
         });
 
@@ -107,28 +124,27 @@ function ResultsContent() {
   }, [searchQuery, fetchVideoData, fetchChannelData]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || loading) return;
-
-    try {
-      setLoading(true);
-      const { mergedVideos, nextPageToken } = await fetchVideoData({
-        q: searchQuery,
-        maxResults: 10,
-        pageToken: pageToken || "",
-      });
-
-      setVideos((prev) => [...prev, ...mergedVideos]);
-      setPageToken(nextPageToken);
-      setHasMore(!!nextPageToken);
-
-      const newChannelMap = await fetchChannelData(mergedVideos);
-      setChannelInfo((prev) => ({ ...prev, ...newChannelMap }));
-    } catch (err) {
-      setError("Failed to fetch more videos");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    setTimeout(async () => {
+      if (!hasMore || loading) return;
+      try {
+        const { mergedVideos, nextPageToken } = await fetchVideoData({
+          q: searchQuery,
+          maxResults: 9,
+          pageToken: pageToken || "",
+        });
+        setVideos((prev) => [...prev, ...mergedVideos]);
+        setPageToken(nextPageToken);
+        setHasMore(!!nextPageToken);
+        const newChannelMap = await fetchChannelData(mergedVideos);
+        setChannelInfo((prev) => ({ ...prev, ...newChannelMap }));
+      } catch (err) {
+        setError("Failed to fetch more videos");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }, 1000);
   }, [
     hasMore,
     loading,
@@ -156,44 +172,36 @@ function ResultsContent() {
     return () => observer.disconnect();
   }, [hasMore, loading, pageToken, loadMore]);
 
-  const videoCards: ICardVideo[] = videos.map((video) => ({
-    title: video.snippet.title,
-    description: video.snippet.description,
-    src: video.snippet.thumbnails.medium.url,
-    ctaText: video.statistics?.viewCount
-      ? formatViewCount(video.statistics.viewCount)
-      : "0 views",
-    channelAvatar:
-      channelInfo[video.snippet.channelId]?.snippet.thumbnails.default.url,
-    channelName: video.snippet.channelTitle,
-    ctaLink: `/watch?v=${video.id.videoId}`,
-    channelSubscribers:
-      channelInfo[video.snippet.channelId]?.statistics.subscriberCount || "0",
-    publishedAt: formatDistanceToNow(new Date(video.snippet.publishedAt)),
-    content: () => (
-      <>
-        <p>{video.snippet.description}</p>
-        <p>
-          Published {formatDistanceToNow(new Date(video.snippet.publishedAt))}{" "}
-          ago
-        </p>
-        <p>
-          {video.statistics?.viewCount
-            ? formatViewCount(video.statistics.viewCount)
-            : "0"}{" "}
-          views
-        </p>
-      </>
-    ),
-  }));
+  const videoCards: ICardVideo[] = videos
+    .filter((video) => video.id.kind === "youtube#video")
+    .map((video) => ({
+      title: video.snippet.title,
+      description: video.snippet.description,
+      src: video.snippet.thumbnails.high.url,
+      ctaText: video.statistics?.viewCount
+        ? formatViewCount(video.statistics.viewCount)
+        : "0 views",
+      channelAvatar:
+        channelInfo[video.snippet.channelId]?.snippet.thumbnails.high.url,
+      channelName: video.snippet.channelTitle,
+      ctaLink: `/watch?v=${video.id.videoId}`,
+      channelSubscribers:
+        channelInfo[video.snippet.channelId]?.statistics.subscriberCount || "0",
+      publishedAt: formatDistanceToNow(new Date(video.snippet.publishedAt)),
+      videoId: video.id.videoId,
+      isLiveStream: video.snippet.liveBroadcastContent === "live",
+    }));
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+  const channelCards = videos
+    .filter((video) => video.id.kind === "youtube#channel")
+    .map((video) => ({
+      name: video.snippet.title,
+      description: video.snippet.description,
+      imageUrl: video.snippet.thumbnails.default.url,
+      subscriberCount:
+        channelInfo[video.snippet.channelId]?.statistics.subscriberCount,
+      isLiveStream: channelsLivingStream.includes(video.snippet.channelId),
+    }));
 
   if (error) {
     return (
@@ -205,32 +213,68 @@ function ResultsContent() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">
-        Search Results for: {searchQuery}
-      </h1>
-
-      <ul className="grid grid-cols-4 gap-4">
-        {videoCards.map((card, index) => (
-          <VideoCard key={`card-${id}-${index}`} card={card} id={id} />
-        ))}
-      </ul>
-
-      {hasMore && (
-        <div
-          id="scroll-sentinel"
-          className="flex justify-center items-center py-4"
-        >
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="p-5 bg-primary rounded-xl text-white mb-6">
+        <h1 className="lg:text-2xl font-bold">
+          Search Results for:{" "}
+          <span className="text-secondary">{searchQuery}</span>
+        </h1>
+      </div>
+      {/* Channel */}
+      {channelCards.length && (
+        <div className="mb-6">
+          <div className="text-xl font-bold text-white mb-3">Channel</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {channelCards.map((card, index) => (
+              <ChannelCard key={`card-${id}-${index}`} card={card} />
+            ))}
+          </div>
         </div>
       )}
+      {/* Videos */}
+      <div>
+        <div className="text-xl font-bold text-white mb-3">Videos</div>
+        <ul className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
+          {videoCards.map((card, index) => (
+            <VideoCard
+              key={`card-${id}-${index}`}
+              card={card}
+              id={id}
+              onCardClick={() => {
+                setSelectedVideoId(card.videoId || "");
+                setIsModalOpen(true);
+              }}
+            />
+          ))}
+          {loading &&
+            !videos.length &&
+            Array.from({ length: 3 }).map((_, index) => (
+              <VideoCardSkeleton key={`skeleton-${index}`} />
+            ))}
+        </ul>
+        {videos.length && hasMore && (
+          <div
+            id="scroll-sentinel"
+            className="flex items-center justify-center w-full gap-2 py-4"
+          >
+            <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+            <p className="text-white">Loading more videos...</p>
+          </div>
+        )}
+      </div>
 
       {videos.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <p className="text-gray-600">
+        <div className="text-xl text-center py-12">
+          <p className="text-red-500">
             No videos found for &quot;{searchQuery}&quot;
           </p>
         </div>
       )}
+
+      <VideoModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        videoId={selectedVideoId}
+      />
     </div>
   );
 }
@@ -241,7 +285,7 @@ export default function ResultsPage() {
     <Suspense
       fallback={
         <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+          <Logo />
         </div>
       }
     >

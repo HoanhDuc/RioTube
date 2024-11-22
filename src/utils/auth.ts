@@ -3,15 +3,11 @@ import { JWT } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
 import axios from "axios";
 
-const CLIENT_ID =
-  "431960230379-e2t2dscqp1bo1ef9hlab94i2t75g0vsm.apps.googleusercontent.com";
-const CLIENT_SECRET = "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";
-
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET || "",
       authorization: {
         params: {
           scope:
@@ -57,8 +53,8 @@ export async function refreshAccessToken(token: JWT) {
   try {
     const url = "https://oauth2.googleapis.com/token";
     const response = await axios.post(url, {
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+      client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET || "",
       refresh_token: token.refreshToken,
       grant_type: "refresh_token",
     });

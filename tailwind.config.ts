@@ -17,6 +17,13 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      animation: {
+        "spin-slow": "spin 2s linear infinite",
+      },
+      backgroundImage: {
+        "live-gradient":
+          "conic-gradient(from 0deg, transparent 0%, #ef4444 50%, transparent 100%)",
+      },
     },
   },
   plugins: [nextui()],

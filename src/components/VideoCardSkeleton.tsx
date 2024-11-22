@@ -2,11 +2,11 @@ import { Card, Skeleton } from "@nextui-org/react";
 
 export default function VideoCardSkeleton() {
   return (
-    <Card className=" w-full space-y-5 p-4 bg-primary" radius="lg">
-      <Skeleton className="h-[150px] rounded-lg">
+    <Card className=" w-full space-y-5 bg-primary" radius="lg">
+      <Skeleton className="h-[185px] rounded-t-xl">
         <div className="h-full rounded-lg bg-white"></div>
       </Skeleton>
-      <div className="flex flex-col justify-between gap-8">
+      <div className="flex flex-col justify-between gap-8 p-4">
         <div className="space-y-3">
           <Skeleton className="w-full rounded-lg">
             <div className="h-3 w-full rounded-lg bg-white"></div>

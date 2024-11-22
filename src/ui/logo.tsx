@@ -12,9 +12,9 @@ export default function Logo({
       <Image src="/logo.svg" alt="Logo" width={size} height={size} />
       <h1
         style={{ fontSize: `${size / 2}px` }}
-        className="font-bold text-white"
+        className="font-bold text-white flex"
       >
-        RioTube
+        <span className="text-secondary">Rio</span>Tube
       </h1>
     </div>
   );

@@ -30,6 +30,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextAuthProvider>{children}</NextAuthProvider>
+        <footer className="bg-primary text-secondary font-bold">
+          <div className="container mx-auto px-4 py-6 text-center">
+            <p>© {new Date().getFullYear()} RioTube. All rights reserved.</p>
+          </div>
+        </footer>
       </body>
     </html>
   );
