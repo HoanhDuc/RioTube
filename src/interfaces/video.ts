@@ -16,6 +16,15 @@ export interface ICardVideo {
   publishedAt: string;
   videoId?: string;
   isLiveStream?: boolean;
+  isSubscribed?: boolean;
   // content: () => JSX.Element;
   onClick?: () => void;
+}
+export interface IChannelCard {
+  name: string;
+  description: string;
+  imageUrl: string;
+  subscriberCount: string;
+  isLiveStream: boolean;
+  isSubscribed: boolean;
 }

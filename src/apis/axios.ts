@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getSession, signOut } from "next-auth/react";
 
 const baseURL = "https://youtube.googleapis.com/youtube/v3";
 
@@ -11,20 +12,35 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const session = localStorage.getItem("session");
+    const session = await getSession();
     config.params = {
       ...config.params,
       key: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
     };
 
-    if (session) {
-      config.headers.Authorization = session;
+    if (session?.user?.accessToken) {
+      config.headers.Authorization = `Bearer ${session.user.accessToken}`;
     }
-
     return config;
   },
   (error) => {
     return Promise.reject(error);
+  }
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      signOut();
+    }
+
+    const errorMessage =
+      error.response?.data?.error?.message ||
+      error.message ||
+      "An unexpected error occurred";
+
+    return Promise.reject(errorMessage);
   }
 );
 

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { ICardVideo } from "@/interfaces/video";
 import { Avatar } from "@nextui-org/react";
-import { formatSubscribersCount } from "@/utils/format";
+import { formatSubscribersCount, formatViewCount } from "@/utils/format";
 
 export interface VideoCardProps {
   card: ICardVideo;
@@ -15,15 +15,20 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
     <motion.div
       layoutId={`card-${card.title}-${id}`}
       onClick={() => onCardClick && onCardClick(card)}
-      className="rounded-xl cursor-pointer text-white bg-primary border border-transparent relative"
+      className="rounded-xl cursor-pointer text-white bg-primary relative overflow-hidden"
     >
-      <motion.div layoutId={`image-${card.title}-${id}`}>
+      <motion.div
+        layoutId={`image-${card.title}-${id}`}
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.2 }}
+      >
         <Image
           width={600}
           height={400}
           src={card.src}
           alt={card.title}
           className="object-cover object-center rounded-t-xl h-48"
+          loading="lazy"
         />
         {card.isLiveStream && (
           <motion.div
@@ -50,25 +55,27 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
         >
           {card.title} | {card.channelName}
         </motion.h3>
-        <div>
+        <div className="flex gap-2 items-center justify-between">
+          <div>
+            <Avatar src={card.channelAvatar} />
+          </div>
+          <div className="w-2/3">
+            <p className="font-bold truncate">{card.channelName}</p>
+            <p className="text-xs text-neutral-400 flex items-center gap-1">
+              {formatSubscribersCount(card.channelSubscribers)}
+            </p>
+          </div>
           <motion.p
             layoutId={`description-${card.ctaText}-${id}`}
-            className="text-neutral-400 text-sm mb-3"
+            className="text-neutral-400 text-sm whitespace-nowrap flex gap-2 items-center"
           >
-            {card.ctaText} &bull; <span className="">{card.publishedAt}</span>
+            {formatViewCount(card.ctaText)}
+            <Image src="/eye.svg" alt="views" width={16} height={16} />
           </motion.p>
-          <div className="flex gap-2 items-center">
-            <Avatar src={card.channelAvatar} />
-            <div className="w-2/3">
-              <p className="font-bold truncate ">{card.channelName}</p>
-              <p className="text-xs text-neutral-400">
-                {formatSubscribersCount(card.channelSubscribers)}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
       {/* <motion.button
+       &bull; <span className="">{card.publishedAt}</span>
         layoutId={`button-${card.title}-${id}`}
         className="px-4 py-2 text-sm rounded-full font-bold bg-gray-100 hover:bg-secondary hover:text-white text-black mt-4 md:mt-0"
       >

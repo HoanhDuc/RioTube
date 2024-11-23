@@ -163,7 +163,13 @@ export default function Home() {
   return (
     <div className="bg-primary flex flex-col m-20 p-10 rounded-xl text-white">
       <div className="text-6xl font-bold mb-5 flex items-center gap-1">
-        <Image src="/logo.svg" alt="Rio" width={60} height={60} />
+        <Image
+          src="/logo.svg"
+          alt="Rio"
+          loading="lazy"
+          width={60}
+          height={60}
+        />
         <p className="text-secondary">Rio</p>{" "}
         <span className="text-4xl  font-light px-4 italic tracking-tighter">
           ×

@@ -24,6 +24,7 @@ export default function LoginPage() {
         <Image
           src="/google-icon.svg"
           alt="Google Logo"
+          loading="lazy"
           width={30}
           height={30}
           priority

@@ -5,31 +5,13 @@ export interface IBaseList {
   pageInfo: PageInfo;
 }
 
-export interface INewFeedList extends IBaseList {
-  items: INewFeedItem[];
-}
-
-export interface ISearchList extends IBaseList {
-  items: IVideoItem[];
-}
-
-export interface IVideoItem {
-  kind: string;
-  etag: string;
-  id: {
-    videoId: string;
-    kind: string;
-  };
-  snippet: Snippet;
-  statistics: Statistics;
-}
-
-export interface INewFeedItem {
-  kind: string;
-  etag: string;
-  id: string;
-  snippet: Snippet;
-  statistics: Statistics;
+export interface ContentDetails {
+  duration: string;
+  dimension: string;
+  definition: string;
+  caption: string;
+  licensedContent: boolean;
+  projection: string;
 }
 
 export interface Snippet {
@@ -45,10 +27,17 @@ export interface Snippet {
   defaultAudioLanguage?: string;
   tags?: string[];
   defaultLanguage?: string;
+  resourceId?: {
+    kind: string;
+    channelId: string;
+  };
 }
 
 export interface Statistics {
   viewCount?: string;
+  likeCount?: string;
+  favoriteCount?: string;
+  commentCount?: string;
   subscriberCount?: string;
 }
 
@@ -100,7 +89,7 @@ export interface PageInfo {
   resultsPerPage: number;
 }
 
-export interface IChannelList {
+export interface IChannelInfoList {
   kind: string;
   etag: string;
   pageInfo: PageInfo;
@@ -124,4 +113,59 @@ export interface SnippetChannel {
   localized: Localized;
   country?: string;
   defaultLanguage?: string;
+}
+
+export interface ISubscriptionList {
+  items: ISubscriptionItem[];
+  snippet: Snippet;
+}
+
+export interface ISubscriptionItem {
+  kind: string;
+  etag: string;
+  id: string;
+  snippet: Snippet;
+}
+
+export interface INewFeedItem {
+  kind: string;
+  etag: string;
+  id: string;
+  snippet: Snippet;
+  statistics: Statistics;
+}
+
+export interface IVideoInfoList {
+  items: IVideoInfoItem[];
+  etag: string;
+  kind: string;
+  pageInfo: PageInfo;
+}
+
+export interface INewFeedList extends IBaseList {
+  items: INewFeedItem[];
+}
+
+export interface ISearchList extends IBaseList {
+  items: IVideoItem[];
+}
+
+export interface IVideoItem {
+  kind: string;
+  etag: string;
+  id: {
+    videoId: string;
+    kind: string;
+  };
+  snippet: Snippet;
+  statistics: Statistics;
+  contentDetails?: ContentDetails;
+}
+export interface IVideoInfoItem {
+  kind: string;
+  etag: string;
+  id: string;
+  snippet: Snippet;
+  statistics: Statistics;
+  contentDetails?: ContentDetails;
 }

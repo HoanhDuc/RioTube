@@ -1,9 +1,16 @@
 import axios from "@/apis/axios";
-import { IChannelList, INewFeedList, ISearchList } from "@/interfaces/youtube";
+import {
+  IChannelInfoList,
+  INewFeedList,
+  ISearchList,
+  ISubscriptionList,
+  IVideoInfoList,
+} from "@/interfaces/youtube";
 
 const PATH_VIDEO = "/videos";
 const PATH_CHANNEL = "/channels";
 const PATH_SEARCH = "/search";
+const PATH_SUBSCRIPTION = "/subscriptions";
 
 export async function getYouTubeFeed(params: {
   part?: string;
@@ -44,7 +51,7 @@ export async function getYouTubeFeed(params: {
 export async function getChannelInfo(params: {
   id?: string;
   type?: string;
-}): Promise<IChannelList> {
+}): Promise<IChannelInfoList> {
   try {
     const response = await axios.get(`${PATH_CHANNEL}`, {
       params: {
@@ -80,7 +87,7 @@ export async function searchVideos(params: {
 
 export async function getVideoInfo(params: {
   id: string;
-}): Promise<INewFeedList> {
+}): Promise<IVideoInfoList> {
   try {
     const response = await axios.get(`${PATH_VIDEO}`, {
       params: {
@@ -91,6 +98,26 @@ export async function getVideoInfo(params: {
     return response.data;
   } catch (error) {
     console.error("Error:", error);
+    throw error;
+  }
+}
+export async function getSubscriptionStatus({
+  channelId,
+}: {
+  channelId: string;
+}): Promise<ISubscriptionList> {
+  try {
+    const response = await axios.get(`${PATH_SUBSCRIPTION}`, {
+      params: {
+        part: "snippet",
+        forChannelId: channelId,
+        mine: true,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error checking subscription status:", error);
     throw error;
   }
 }

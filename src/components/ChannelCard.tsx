@@ -1,16 +1,11 @@
+import { IChannelCard } from "@/interfaces/video";
 import { formatSubscribersCount } from "@/utils/format";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import React from "react";
 
 interface ChannelCardProps {
-  card: {
-    name: string;
-    description?: string;
-    imageUrl?: string;
-    subscriberCount?: string;
-    isLiveStream?: boolean;
-  };
+  card: IChannelCard;
 }
 
 const ChannelCard: React.FC<ChannelCardProps> = ({ card }) => {
@@ -29,6 +24,7 @@ const ChannelCard: React.FC<ChannelCardProps> = ({ card }) => {
                   }`}
                   width={64}
                   height={64}
+                  loading="lazy"
                 />
               </div>
               {card.isLiveStream && (
@@ -59,25 +55,43 @@ const ChannelCard: React.FC<ChannelCardProps> = ({ card }) => {
             )}
           </div>
         </div>
-        <motion.button
-          layoutId={`button-${card.name}`}
-          className="px-4 py-2 text-sm rounded-full font-bold bg-white hover:bg-secondary hover:text-white text-primary mt-4 md:mt-0 flex items-center gap-2"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {!card.isSubscribed ? (
+          <motion.button
+            layoutId={`button-${card.name}`}
+            className="px-4 py-2 text-sm rounded-full font-bold  bg-secondary hover:bg-white hover:text-primary text-white mt-4 md:mt-0 flex items-center gap-2 transition-all duration-100"
           >
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          Subscribe
-        </motion.button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            Subscribe
+          </motion.button>
+        ) : (
+          <p className="px-4 py-2 text-sm rounded-full font-bold border border-secondary text-secondary flex items-center gap-1">
+            Subscribed
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          </p>
+        )}
       </div>
       {card.description && (
         <p className="text-xs line-clamp-2 text-gray-400 mt-3">

@@ -19,8 +19,8 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 flex items-center justify-between px-4 py-2 border-b-2 border-primary bg-black z-50">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 flex items-center justify-between px-4 py-2 border-b border-primary backdrop-blur-lg bg-black/50 z-50">
+      <div className="flex items-center lg:gap-4">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="hover:bg-primary p-2 rounded-xl flex items-center justify-center"
@@ -57,9 +57,10 @@ export default function Header() {
           <Image
             src="/logo.svg"
             alt="logo"
-            width={60}
-            height={60}
+            width={80}
+            height={80}
             className="md:hidden"
+            loading="lazy"
           />
         </Link>
       </div>

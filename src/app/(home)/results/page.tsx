@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback, useId, Suspense } from "react";
-import { getChannelInfo, searchVideos, getVideoInfo } from "@/apis/youtube";
+import {
+  getChannelInfo,
+  searchVideos,
+  getVideoInfo,
+  getSubscriptionStatus,
+} from "@/apis/youtube";
 import { useSearchParams } from "next/navigation";
 import { IChannelItem, IVideoItem } from "@/interfaces/youtube";
 import { VideoCard } from "@/components/VideoCard";
 import { formatDistanceToNow } from "date-fns";
-import { formatViewCount } from "@/utils/format";
-import { ICardVideo } from "@/interfaces/video";
+import { ICardVideo, IChannelCard } from "@/interfaces/video";
 import { VideoModal } from "@/components/VideoModal";
 import VideoCardSkeleton from "@/components/VideoCardSkeleton";
 import Logo from "@/ui/logo";
@@ -27,9 +31,11 @@ function ResultsContent() {
   }>({});
   const [selectedVideoId, setSelectedVideoId] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [subscribedChannels, setSubscribedChannels] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search_query") || "";
+  const maxResults = 48;
 
   const id = useId();
 
@@ -90,22 +96,39 @@ function ResultsContent() {
     );
   }, []);
 
+  const fetchSubscriptionStatus = useCallback(async (channelIds: string[]) => {
+    try {
+      const statuses = await getSubscriptionStatus({
+        channelId: channelIds.join(","),
+      });
+      setSubscribedChannels(
+        statuses.items
+          .map((item) => item.snippet.resourceId?.channelId)
+          .filter((id) => id) as string[]
+      );
+    } catch (err) {
+      console.error("Failed to fetch subscription status:", err);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
         const { mergedVideos, nextPageToken } = await fetchVideoData({
           q: searchQuery,
-          maxResults: 9,
+          maxResults,
           pageToken: "",
         });
+        const newChannelMap = await fetchChannelData(mergedVideos);
+        const channelIds = Object.keys(newChannelMap);
+        await fetchSubscriptionStatus(channelIds);
 
         setVideos(mergedVideos);
         setPageToken(nextPageToken);
         setHasMore(!!nextPageToken);
-
-        const newChannelMap = await fetchChannelData(mergedVideos);
         setChannelInfo(newChannelMap);
+
         setError(null);
       } catch (err) {
         setError("Failed to fetch videos");
@@ -121,7 +144,7 @@ function ResultsContent() {
       setHasMore(true);
       fetchInitialData();
     }
-  }, [searchQuery, fetchVideoData, fetchChannelData]);
+  }, [searchQuery, fetchVideoData, fetchChannelData, fetchSubscriptionStatus]);
 
   const loadMore = useCallback(async () => {
     setLoading(true);
@@ -130,7 +153,7 @@ function ResultsContent() {
       try {
         const { mergedVideos, nextPageToken } = await fetchVideoData({
           q: searchQuery,
-          maxResults: 9,
+          maxResults,
           pageToken: pageToken || "",
         });
         setVideos((prev) => [...prev, ...mergedVideos]);
@@ -178,9 +201,7 @@ function ResultsContent() {
       title: video.snippet.title,
       description: video.snippet.description,
       src: video.snippet.thumbnails.high.url,
-      ctaText: video.statistics?.viewCount
-        ? formatViewCount(video.statistics.viewCount)
-        : "0 views",
+      ctaText: video.statistics?.viewCount || "0",
       channelAvatar:
         channelInfo[video.snippet.channelId]?.snippet.thumbnails.high.url,
       channelName: video.snippet.channelTitle,
@@ -190,17 +211,19 @@ function ResultsContent() {
       publishedAt: formatDistanceToNow(new Date(video.snippet.publishedAt)),
       videoId: video.id.videoId,
       isLiveStream: video.snippet.liveBroadcastContent === "live",
+      isSubscribed: subscribedChannels.includes(video.snippet.channelId),
     }));
 
-  const channelCards = videos
+  const channelCards: IChannelCard[] = videos
     .filter((video) => video.id.kind === "youtube#channel")
     .map((video) => ({
       name: video.snippet.title,
       description: video.snippet.description,
       imageUrl: video.snippet.thumbnails.default.url,
       subscriberCount:
-        channelInfo[video.snippet.channelId]?.statistics.subscriberCount,
+        channelInfo[video.snippet.channelId]?.statistics.subscriberCount || "0",
       isLiveStream: channelsLivingStream.includes(video.snippet.channelId),
+      isSubscribed: subscribedChannels.includes(video.snippet.channelId),
     }));
 
   if (error) {
@@ -274,6 +297,10 @@ function ResultsContent() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         videoId={selectedVideoId}
+        card={
+          videoCards.find((video) => video.videoId === selectedVideoId) ||
+          videoCards[0]
+        }
       />
     </div>
   );
