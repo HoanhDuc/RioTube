@@ -161,43 +161,43 @@ import Link from "next/link";
 // }
 export default function Home() {
   return (
-    <div className="bg-primary flex flex-col m-20 p-10 rounded-xl text-white">
-      <div className="text-6xl font-bold mb-5 flex items-center gap-1">
+    <div className="container px-5 mx-auto mt-16 flex flex-col rounded-xl text-white">
+      <div className="text-xl lg:text-4xl font-bold mb-5 flex items-center">
         <Image
           src="/logo.svg"
           alt="Rio"
           loading="lazy"
           width={60}
           height={60}
+          className="w-14 h-14 md:w-[70px] md:h-[70px]"
         />
-        <p className="text-secondary">Rio</p>{" "}
-        <span className="text-4xl  font-light px-4 italic tracking-tighter">
-          ×
-        </span>
+        <p>Rio</p>{" "}
+        <span className=" font-light px-4 italic tracking-tighter"></span>
         <div className="flex items-center gap-2">
           <svg
-            className="w-[55px] h-[55px]"
+            className="w-10 h-10 md:w-[55px] md:h-[55px]"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
           >
             <path
               fill="#ff0000"
-              d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
+              d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816z"
             />
+            <path fill="#ffffff" d="M9 16v-8l8 3.993-8 4.007z" />
           </svg>
           <span className="text-white ml-1">YouTube</span>
         </div>
       </div>
-      <p className="text-xl">
+      <p className="lg:text-xl">
         RioTube is a platform for watching and sharing videos from YouTube.
       </p>
-      <p className="text-xl">
+      <p className="lg:text-xl">
         You can search for videos, channels and playlists by using the search
         bar above.
       </p>
 
       <Link
-        href="/results?search_query=top%20trending"
+        href="/youtube?search_query=top%20trending"
         className="mt-6 px-6 py-3 border border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition-all w-fit"
       >
         Explore Top Videos

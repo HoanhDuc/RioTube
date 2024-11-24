@@ -12,10 +12,10 @@ import { IChannelItem, IVideoItem } from "@/interfaces/youtube";
 import { VideoCard } from "@/components/VideoCard";
 import { formatDistanceToNow } from "date-fns";
 import { ICardVideo, IChannelCard } from "@/interfaces/video";
-import { VideoModal } from "@/components/VideoModal";
 import VideoCardSkeleton from "@/components/VideoCardSkeleton";
 import Logo from "@/ui/logo";
 import ChannelCard from "@/components/ChannelCard";
+import Link from "next/link";
 
 function ResultsContent() {
   const [videos, setVideos] = useState<IVideoItem[]>([]);
@@ -29,8 +29,6 @@ function ResultsContent() {
   const [channelInfo, setChannelInfo] = useState<{
     [key: string]: IChannelItem;
   }>({});
-  const [selectedVideoId, setSelectedVideoId] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [subscribedChannels, setSubscribedChannels] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
@@ -258,15 +256,12 @@ function ResultsContent() {
         <div className="text-xl font-bold text-white mb-3">Videos</div>
         <ul className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
           {videoCards.map((card, index) => (
-            <VideoCard
+            <Link
+              href={`/youtube/watch?v=${card.videoId}`}
               key={`card-${id}-${index}`}
-              card={card}
-              id={id}
-              onCardClick={() => {
-                setSelectedVideoId(card.videoId || "");
-                setIsModalOpen(true);
-              }}
-            />
+            >
+              <VideoCard key={`card-${id}-${index}`} card={card} id={id} />
+            </Link>
           ))}
           {loading &&
             !videos.length &&
@@ -292,21 +287,10 @@ function ResultsContent() {
           </p>
         </div>
       )}
-
-      <VideoModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        videoId={selectedVideoId}
-        card={
-          videoCards.find((video) => video.videoId === selectedVideoId) ||
-          videoCards[0]
-        }
-      />
     </div>
   );
 }
 
-// Main page component
 export default function ResultsPage() {
   return (
     <Suspense

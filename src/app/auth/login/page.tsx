@@ -27,7 +27,6 @@ export default function LoginPage() {
           loading="lazy"
           width={30}
           height={30}
-          priority
         />
         Sign in with Google
       </button>
