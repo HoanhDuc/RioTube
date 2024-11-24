@@ -8,8 +8,17 @@ import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 
 export default function WatchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WatchPageContent />
+    </Suspense>
+  );
+}
+
+function WatchPageContent() {
   const searchParams = useSearchParams();
   const videoId = searchParams.get("v");
   const [videoDetails, setVideoDetails] = useState<ICardVideo | null>(null);
