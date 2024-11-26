@@ -15,19 +15,20 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
     <motion.div
       layoutId={`card-${card.title}-${id}`}
       onClick={() => onCardClick && onCardClick(card)}
-      className="rounded-xl cursor-pointer text-white bg-primary relative overflow-hidden"
+      className="cursor-pointer text-white relative"
     >
       <motion.div
         layoutId={`image-${card.title}-${id}`}
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.2 }}
+        // whileHover={{ scale: 1.05 }}
+        // transition={{ duration: 0.2 }}
+        className=" rounded-xl h-48 border border-primary overflow-hidden"
       >
         <Image
           width={600}
           height={400}
           src={card.src}
           alt={card.title}
-          className="object-cover object-center rounded-t-xl h-48"
+          className="object-cover object-center h-48  rounded-xl"
           loading="lazy"
         />
         {card.isLiveStream && (
@@ -48,7 +49,7 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
           </motion.div>
         )}
       </motion.div>
-      <div className="flex flex-col gap-4 justify-between p-4">
+      <div className="flex flex-col gap-2 justify-between py-2">
         <motion.h3
           layoutId={`title-${card.title}-${id}`}
           className=" line-clamp-2"
@@ -56,18 +57,21 @@ export const VideoCard = ({ card, id, onCardClick }: VideoCardProps) => {
           {card.title} | {card.channelName}
         </motion.h3>
         <div className="flex gap-2 items-center justify-between">
-          <div>
-            <Avatar src={card.channelAvatar} />
+          <div className="relative">
+            <Avatar
+              src={card.channelAvatar}
+              className={card.isLiveStream ? "border-2 border-red-600" : ""}
+            />
           </div>
           <div className="w-2/3">
-            <p className="font-bold truncate">{card.channelName}</p>
+            <p className="font-bold truncate text-sm">{card.channelName}</p>
             <p className="text-xs text-neutral-400 flex items-center gap-1">
               {formatSubscribersCount(card.channelSubscribers)}
             </p>
           </div>
           <motion.p
             layoutId={`description-${card.ctaText}-${id}`}
-            className="text-neutral-400 text-sm whitespace-nowrap flex gap-2 items-center"
+            className=" text-sm whitespace-nowrap flex gap-2 items-center w-1/3 justify-end"
           >
             {formatViewCount(card.ctaText)}
             <Image src="/eye.svg" alt="views" width={16} height={16} />

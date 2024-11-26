@@ -16,16 +16,17 @@ import VideoCardSkeleton from "@/components/VideoCardSkeleton";
 import Logo from "@/ui/logo";
 import ChannelCard from "@/components/ChannelCard";
 import Link from "next/link";
+import { Skeleton } from "@nextui-org/react";
 
 function ResultsContent() {
   const [videos, setVideos] = useState<IVideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pageToken, setPageToken] = useState<string | null>(null);
+  // const [pageToken, setPageToken] = useState<string | null>(null);
   const [channelsLivingStream, setChannelsLivingStream] = useState<string[]>(
     []
   );
-  const [hasMore, setHasMore] = useState(true);
+  // const [hasMore, setHasMore] = useState(true);
   const [channelInfo, setChannelInfo] = useState<{
     [key: string]: IChannelItem;
   }>({});
@@ -34,6 +35,7 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search_query") || "";
   const maxResults = 48;
+  const cacheKey = `youtube-${searchQuery}`;
 
   const id = useId();
 
@@ -94,38 +96,36 @@ function ResultsContent() {
     );
   }, []);
 
-  const fetchSubscriptionStatus = useCallback(async (channelIds: string[]) => {
-    try {
-      const statuses = await getSubscriptionStatus({
-        channelId: channelIds.join(","),
-      });
-      setSubscribedChannels(
-        statuses.items
-          .map((item) => item.snippet.resourceId?.channelId)
-          .filter((id) => id) as string[]
-      );
-    } catch (err) {
-      console.error("Failed to fetch subscription status:", err);
-    }
-  }, []);
-
   useEffect(() => {
+    const cachedData = localStorage.getItem(cacheKey);
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const { mergedVideos, nextPageToken } = await fetchVideoData({
+        const { mergedVideos } = await fetchVideoData({
           q: searchQuery,
           maxResults,
           pageToken: "",
         });
         const newChannelMap = await fetchChannelData(mergedVideos);
         const channelIds = Object.keys(newChannelMap);
-        await fetchSubscriptionStatus(channelIds);
+
+        const statuses = await getSubscriptionStatus({
+          channelId: channelIds.join(","),
+        });
+        const newSubscribedChannels = statuses.items
+          .map((item) => item.snippet.resourceId?.channelId)
+          .filter((id) => id) as string[];
 
         setVideos(mergedVideos);
-        setPageToken(nextPageToken);
-        setHasMore(!!nextPageToken);
         setChannelInfo(newChannelMap);
+        setSubscribedChannels(newSubscribedChannels);
+
+        const cacheData = {
+          videos: mergedVideos,
+          channelInfo: newChannelMap,
+          subscribes: newSubscribedChannels,
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
         setError(null);
       } catch (err) {
@@ -138,60 +138,66 @@ function ResultsContent() {
 
     if (searchQuery) {
       setVideos([]);
-      setPageToken(null);
-      setHasMore(true);
+      if (cachedData) {
+        setLoading(false);
+        const parseCached = JSON.parse(cachedData);
+        setVideos(parseCached.videos);
+        setChannelInfo(parseCached.channelInfo);
+        setSubscribedChannels(parseCached.subscribes);
+        return;
+      }
       fetchInitialData();
     }
-  }, [searchQuery, fetchVideoData, fetchChannelData, fetchSubscriptionStatus]);
+  }, [searchQuery, fetchVideoData, fetchChannelData]);
 
-  const loadMore = useCallback(async () => {
-    setLoading(true);
-    setTimeout(async () => {
-      if (!hasMore || loading) return;
-      try {
-        const { mergedVideos, nextPageToken } = await fetchVideoData({
-          q: searchQuery,
-          maxResults,
-          pageToken: pageToken || "",
-        });
-        setVideos((prev) => [...prev, ...mergedVideos]);
-        setPageToken(nextPageToken);
-        setHasMore(!!nextPageToken);
-        const newChannelMap = await fetchChannelData(mergedVideos);
-        setChannelInfo((prev) => ({ ...prev, ...newChannelMap }));
-      } catch (err) {
-        setError("Failed to fetch more videos");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }, 1000);
-  }, [
-    hasMore,
-    loading,
-    pageToken,
-    searchQuery,
-    fetchVideoData,
-    fetchChannelData,
-  ]);
+  // const loadMore = useCallback(async () => {
+  //   setLoading(true);
+  //   setTimeout(async () => {
+  //     if (!hasMore || loading) return;
+  //     try {
+  //       const { mergedVideos, nextPageToken } = await fetchVideoData({
+  //         q: searchQuery,
+  //         maxResults,
+  //         pageToken: pageToken || "",
+  //       });
+  //       setVideos((prev) => [...prev, ...mergedVideos]);
+  //       setPageToken(nextPageToken);
+  //       setHasMore(!!nextPageToken);
+  //       const newChannelMap = await fetchChannelData(mergedVideos);
+  //       setChannelInfo((prev) => ({ ...prev, ...newChannelMap }));
+  //     } catch (err) {
+  //       setError("Failed to fetch more videos");
+  //       console.error(err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }, 1000);
+  // }, [
+  //   hasMore,
+  //   loading,
+  //   pageToken,
+  //   searchQuery,
+  //   fetchVideoData,
+  //   fetchChannelData,
+  // ]);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 1.0 }
-    );
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       if (entries[0].isIntersecting && hasMore && !loading) {
+  //         loadMore();
+  //       }
+  //     },
+  //     { threshold: 1.0 }
+  //   );
 
-    const sentinel = document.getElementById("scroll-sentinel");
-    if (sentinel) {
-      observer.observe(sentinel);
-    }
+  //   const sentinel = document.getElementById("scroll-sentinel");
+  //   if (sentinel) {
+  //     observer.observe(sentinel);
+  //   }
 
-    return () => observer.disconnect();
-  }, [hasMore, loading, pageToken, loadMore]);
+  //   return () => observer.disconnect();
+  // }, [hasMore, loading, pageToken, loadMore]);
 
   const videoCards: ICardVideo[] = videos
     .filter((video) => video.id.kind === "youtube#video")
@@ -224,6 +230,24 @@ function ResultsContent() {
       isSubscribed: subscribedChannels.includes(video.snippet.channelId),
     }));
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      console.log(event);
+      if (window.opener === null && window.history.length === 1) {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith("youtube-")) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -233,7 +257,7 @@ function ResultsContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-5 py-8">
       <div className="p-5 bg-primary rounded-xl text-white mb-6">
         <h1 className="lg:text-2xl font-bold">
           Search Results for:{" "}
@@ -241,20 +265,34 @@ function ResultsContent() {
         </h1>
       </div>
       {/* Channel */}
-      {channelCards.length && (
-        <div className="mb-6">
-          <div className="text-xl font-bold text-white mb-3">Channel</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {channelCards.map((card, index) => (
-              <ChannelCard key={`card-${id}-${index}`} card={card} />
+      <div className="mb-6">
+        <div className="text-xl font-bold text-white mb-3">Channel</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {channelCards.map((card, index) => (
+            <ChannelCard key={`card-${id}-${index}`} card={card} />
+          ))}
+          {loading &&
+            !channelCards.length &&
+            Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className="p-4 bg-primary rounded-xl"
+              >
+                <div className="flex gap-2">
+                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="w-2/5 h-3 rounded-lg" />
+                    <Skeleton className="w-2/5 h-3 rounded-lg" />
+                  </div>
+                </div>
+              </div>
             ))}
-          </div>
         </div>
-      )}
+      </div>
       {/* Videos */}
       <div>
         <div className="text-xl font-bold text-white mb-3">Videos</div>
-        <ul className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
+        <ul className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-4">
           {videoCards.map((card, index) => (
             <Link
               href={`/youtube/watch?v=${card.videoId}`}
@@ -265,11 +303,11 @@ function ResultsContent() {
           ))}
           {loading &&
             !videos.length &&
-            Array.from({ length: 3 }).map((_, index) => (
+            Array.from({ length: 4 }).map((_, index) => (
               <VideoCardSkeleton key={`skeleton-${index}`} />
             ))}
         </ul>
-        {videos.length && hasMore && (
+        {/* {videos.length && hasMore && (
           <div
             id="scroll-sentinel"
             className="flex items-center justify-center w-full gap-2 py-4"
@@ -277,7 +315,7 @@ function ResultsContent() {
             <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
             <p className="text-white">Loading more videos...</p>
           </div>
-        )}
+        )} */}
       </div>
 
       {videos.length === 0 && !loading && (

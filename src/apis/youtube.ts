@@ -1,5 +1,6 @@
 import axios from "@/apis/axios";
 import {
+  CommentThreadResponse,
   IChannelInfoList,
   INewFeedList,
   ISearchList,
@@ -120,4 +121,23 @@ export async function getSubscriptionStatus({
     console.error("Error checking subscription status:", error);
     throw error;
   }
+}
+export async function getVideoComments({
+  videoId,
+  maxResults = 20,
+  pageToken,
+}: {
+  videoId: string;
+  maxResults?: number;
+  pageToken?: string;
+}): Promise<CommentThreadResponse> {
+  const response = await axios.get("/commentThreads", {
+    params: {
+      part: "snippet,replies",
+      videoId,
+      maxResults,
+      pageToken,
+    },
+  });
+  return response.data;
 }
