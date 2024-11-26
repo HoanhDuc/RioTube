@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getSession, signOut } from "next-auth/react";
+import { toast } from "sonner";
 
 const baseURL = "https://youtube.googleapis.com/youtube/v3";
 
@@ -10,8 +11,14 @@ const axiosInstance = axios.create({
   },
 });
 
+let isUnauthorized = false;
+
 axiosInstance.interceptors.request.use(
   async (config) => {
+    if (isUnauthorized) {
+      return Promise.reject(new Error("User is unauthorized"));
+    }
+
     const session = await getSession();
     config.params = {
       ...config.params,
@@ -32,16 +39,39 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      alert("Token was expired! Please re-login to using app.");
+      isUnauthorized = true;
+      toast.dismiss();
+      toast.error("Token has expired. Please login again!", {
+        style: {
+          background: "#ff0123",
+          color: "#fff",
+          fontWeight: "bold",
+          fontSize: "12px",
+          border: "none",
+        },
+      });
       signOut();
+    } else {
+      const errorMessage =
+        error.response?.data?.error?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      if (error.response?.status !== 401) {
+        toast.dismiss();
+        toast.error(errorMessage, {
+          style: {
+            background: "#ff0123",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: "12px",
+            border: "none",
+          },
+        });
+        signOut();
+      }
     }
-
-    const errorMessage =
-      error.response?.data?.error?.message ||
-      error.message ||
-      "An unexpected error occurred";
-
-    return Promise.reject(errorMessage);
+    return Promise.reject(error);
   }
 );
 

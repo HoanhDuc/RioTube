@@ -169,3 +169,25 @@ export interface IVideoInfoItem {
   statistics: Statistics;
   contentDetails?: ContentDetails;
 }
+export interface CommentSnippet {
+  topLevelComment: {
+    snippet: {
+      authorProfileImageUrl: string;
+      authorDisplayName: string;
+      publishedAt: string;
+      textDisplay: string;
+      likeCount: number;
+    };
+  };
+  totalReplyCount: number;
+}
+
+export interface CommentVideo {
+  id: string;
+  snippet: CommentSnippet;
+}
+
+export interface CommentThreadResponse {
+  items: CommentVideo[];
+  nextPageToken?: string | null;
+}

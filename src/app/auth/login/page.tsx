@@ -6,8 +6,9 @@ import Image from "next/image";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col gap-10 items-center justify-center bg-black">
-      <Logo size={150} />
+    <div className="flex min-h-[91vh] flex-col gap-10 items-center justify-center bg-black">
+      <Logo className="hidden md:flex" size={150} />
+      <Logo className=" md:hidden" size={80} />
       <button
         onClick={async () => {
           try {
