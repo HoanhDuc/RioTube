@@ -2,7 +2,7 @@ import axios from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
 
-const baseURL = "https://youtube.googleapis.com/youtube/v3";
+const baseURL = "https://phimapi.com/";
 
 const axiosInstance = axios.create({
   baseURL,

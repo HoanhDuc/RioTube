@@ -2,6 +2,8 @@
 import Header from "@/ui/header";
 import React, { ReactNode } from "react";
 import { NextUIProvider } from "@nextui-org/react";
+import PageTransition from "@/components/PageTransition";
+
 
 interface DefaultLayoutProps {
   children: ReactNode;
@@ -12,7 +14,9 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
     <div className="min-h-screen bg-black">
       <Header />
       <main>
-        <NextUIProvider>{children}</NextUIProvider>
+        <PageTransition>
+          <NextUIProvider>{children}</NextUIProvider>
+        </PageTransition>
       </main>
     </div>
   );

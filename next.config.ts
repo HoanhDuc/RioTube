@@ -2,11 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      "lh3.googleusercontent.com",
-      "i.ytimg.com",
-      "yt3.ggpht.com",
-      "storage.googleapis.com",
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
     ],
   },
   env: {

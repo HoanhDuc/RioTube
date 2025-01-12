@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { NextAuthProvider } from "@/components/providers";
-import { Toaster } from "sonner";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,17 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-black">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
         <NextAuthProvider>{children}</NextAuthProvider>
-        <footer className="border-t border-primary bg-black text-secondary font-bold">
-          <div className="container mx-auto px-4 py-6 text-center">
-            <p>© {new Date().getFullYear()} RioTube. All rights reserved.</p>
-          </div>
-        </footer>
-        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );
