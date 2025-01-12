@@ -156,7 +156,7 @@ const MoviePlayer = ({
         hls.destroy();
       }
     };
-  }, [videoUrl, openEpisodes]);
+  }, [videoUrl, openEpisodes, title]);
 
   useEffect(() => {
     const art = artRef.current?.querySelector(".artplayer-app") as {

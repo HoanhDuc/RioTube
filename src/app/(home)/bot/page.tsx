@@ -4,10 +4,15 @@ import { Avatar } from "@nextui-org/react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 
+type Role = "assistant" | "user";
+
+interface ChatMessage {
+  role: Role;
+  content: string;
+}
+
 export default function Home() {
-  const [messages, setMessages] = useState<
-    Array<{ role: "user" | "assistant"; content: string }>
-  >([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [displayText, setDisplayText] = useState("");
@@ -37,7 +42,7 @@ export default function Home() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage: ChatMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);

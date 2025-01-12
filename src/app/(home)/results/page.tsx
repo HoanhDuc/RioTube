@@ -81,8 +81,8 @@ function SearchResults({ results }: { results: SearchResult[] }) {
   if (!results?.length) return <NoResults />;
 
   const getImageUrl = (path: string | null | undefined) => {
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
+    if (!path) return "/placeholder.jpg";
+    if (path.startsWith("http")) return path;
     return `${IMAGE_CDN_URL}${path}`;
   };
 
@@ -96,7 +96,11 @@ function SearchResults({ results }: { results: SearchResult[] }) {
         >
           <div className="relative aspect-[2/3] w-full">
             <Image
-              src={getImageUrl(item.thumb_url) || getImageUrl(item.poster_url) || '/placeholder.jpg'}
+              src={
+                getImageUrl(item.thumb_url) ||
+                getImageUrl(item.poster_url) ||
+                "/placeholder.jpg"
+              }
               alt={item.name}
               fill
               className="object-cover"
@@ -151,18 +155,27 @@ function SearchResults({ results }: { results: SearchResult[] }) {
   );
 }
 
-export default async function ResultsPage({
-  searchParams,
-}: {
-  searchParams: { search_query?: string; page?: string };
-}) {
-  const query = searchParams.search_query || "";
-  const page = parseInt(searchParams.page || "1");
+interface SearchParams {
+  search_query?: string;
+  page?: string;
+}
+
+interface PageProps {
+  searchParams: Promise<SearchParams>;
+}
+
+export default async function ResultsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  const query = params.search_query || "";
+  const page = parseInt(params.page || "1");
 
   if (!query) {
     return (
       <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-12 pt-16 sm:pt-20 md:pt-24">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-8">Please enter a search term</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-8">
+          Please enter a search term
+        </h1>
       </div>
     );
   }
