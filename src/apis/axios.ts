@@ -1,6 +1,5 @@
 import axios from "axios";
 import { getSession, signOut } from "next-auth/react";
-import { toast } from "sonner";
 
 const baseURL = "https://phimapi.com/";
 
@@ -40,34 +39,9 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       isUnauthorized = true;
-      toast.dismiss();
-      toast.error("Token has expired. Please login again!", {
-        style: {
-          background: "#ff0123",
-          color: "#fff",
-          fontWeight: "bold",
-          fontSize: "12px",
-          border: "none",
-        },
-      });
       signOut();
     } else {
-      const errorMessage =
-        error.response?.data?.error?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
       if (error.response?.status !== 401) {
-        toast.dismiss();
-        toast.error(errorMessage, {
-          style: {
-            background: "#ff0123",
-            color: "#fff",
-            fontWeight: "bold",
-            fontSize: "12px",
-            border: "none",
-          },
-        });
         signOut();
       }
     }
